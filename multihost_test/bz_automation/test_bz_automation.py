@@ -24,6 +24,6 @@ class TestPamBz(object):
         execute_cmd(multihost, 'echo "anuj_test hard nofile -1"'
                                ' >> "/etc/security/limits.conf"')
         execute_cmd(multihost, "su -c 'id' anuj_test")
-        execute_cmd(multihost, "cp -vf /tmp/limits.conf_anuj"
-                               " /etc/security/limits.conf")
+        execute_cmd(multihost, "cp -vf /tmp/limits.conf_anuj "
+                               "/etc/security/limits.conf")
         execute_cmd(multihost, "userdel -r anuj_test")
