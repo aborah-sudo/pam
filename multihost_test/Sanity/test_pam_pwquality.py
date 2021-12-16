@@ -9,7 +9,7 @@ def execute_cmd(multihost, command):
     return cmd
 
 
-@pytest.mark.tier1_2
+@pytest.mark.tier1
 class TestPamPwquality(object):
     def test_simple_test_system_auth(self, multihost, create_localusers):
         """
