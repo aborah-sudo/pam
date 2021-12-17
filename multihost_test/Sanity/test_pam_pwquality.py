@@ -2,6 +2,7 @@
 import pytest
 import subprocess
 import os
+import time
 
 
 def execute_cmd(multihost, command):
@@ -68,6 +69,7 @@ class TestPamPwquality(object):
         execute_cmd(multihost, "sed -i 's/.*pam_pwquality.*/password   "
                                "requisite pam_pwquality.so authtok_type=PAMTEST "
                                "enforce_for_root/'  /etc/pam.d/system-auth")
+        time.sleep(30000)
         multihost.client[0].transport.put_file(os.getcwd() +
                                                '/script/pam_pwquality.sh',
                                                '/tmp/pam_pwquality.sh')
