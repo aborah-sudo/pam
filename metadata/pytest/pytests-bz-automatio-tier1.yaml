@@ -14,6 +14,10 @@ phases:
         extra_vars:
           repo: https://github.com/RedHatQE/pam.git
           branch: main
+      - playbook: init/sssd-upstream-pytest.yaml
+        extra_vars:
+          repo: https://github.com/SSSD/sssd.git
+          branch: master
       - playbook: init/testrunner-dir.yaml
   - name: provision
     steps:
@@ -29,7 +33,7 @@ phases:
   - name: test
     steps:
       - pytests: multihost_test/bz_automation
-        git: ../sssd
+        git: ../sssd/pam
         args: -m tier1
         ssh_transport: openssh
 
