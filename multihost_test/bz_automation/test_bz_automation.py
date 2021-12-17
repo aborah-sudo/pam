@@ -10,8 +10,8 @@ def execute_cmd(multihost, command):
     return cmd
 
 
+@pytest.mark.tier1
 class TestPamBz(object):
-    @pytest.mark.tier1
     def test_unlimited(self, multihost):
         """
         :title: For nofile, a value of "unlimited" should be allowed.
