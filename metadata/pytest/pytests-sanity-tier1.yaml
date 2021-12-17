@@ -3,7 +3,7 @@ domains:
     type: sssd
     hosts:
       - name: hostname1
-        external_hostname: hostname3
+        external_hostname: hostname1
         group: ipaclient
         role: client
         os: rhel-8.6
