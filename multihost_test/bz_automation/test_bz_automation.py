@@ -17,6 +17,7 @@ class TestPamBz(object):
         """
         execute_cmd(multihost, "cp -vf /etc/security/limits.conf /tmp/limits.conf_anuj")
         user = "anuj_test"
+        execute_cmd(multihost, "yum update -y pam")
         execute_cmd(multihost, "useradd anuj_test")
         execute_cmd(multihost, f"echo password123 | passwd --stdin {user}")
         execute_cmd(multihost, 'echo "anuj_test hard nofile -1" >> "/etc/security/limits.conf"')
