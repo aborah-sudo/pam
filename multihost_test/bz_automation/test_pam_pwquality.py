@@ -69,7 +69,7 @@ class TestPamPwquality(object):
         execute_cmd(multihost, "sed -i 's/.*pam_pwquality.*/password   "
                                "requisite pam_pwquality.so authtok_type=PAMTEST "
                                "enforce_for_root/'  /etc/pam.d/system-auth")
-        file_location = "/multihost_test/Sanity/script/pam_pwquality.sh"
+        file_location = "/multihost_test/bz_automation/script/pam_pwquality.sh"
         multihost.client[0].transport.put_file(os.getcwd() +
                                                file_location,
                                                '/tmp/pam_pwquality.sh')
