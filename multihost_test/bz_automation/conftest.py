@@ -51,3 +51,20 @@ def backupsssdconf(session_multihost, request):
         session_multihost.client[0].run_command(restore)
     request.addfinalizer(restoresssdconf)
 
+
+@pytest.fixture(scope='function')
+def create_localusers(session_multihost, request):
+    """ create users for test """
+    session_multihost.client[0].run_command("cp -vf /etc/pam.d/system-auth "
+                                            "/etc/pam.d/system-auth_anuj")
+    session_multihost.client[0].run_command("useradd local_anuj")
+    session_multihost.client[0].run_command("useradd pamtest1")
+
+    def restore_conf():
+        """ Restore """
+        session_multihost.client[0].run_command("cp -vf /etc/pam.d/system-auth_anuj "
+                                                "/etc/pam.d/system-auth")
+        session_multihost.client[0].run_command("userdel -rf local_anuj")
+        session_multihost.client[0].run_command("userdel -rf pamtest1")
+
+    request.addfinalizer(restore_conf)
