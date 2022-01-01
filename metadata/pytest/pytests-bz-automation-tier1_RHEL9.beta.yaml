@@ -6,7 +6,7 @@ domains:
         external_hostname: hostname1
         group: ipaclient
         role: client
-        os: rhel-8.6
+        os: rhel-9-beta
 phases:
   - name: init
     steps:
@@ -28,7 +28,7 @@ phases:
       - playbook: prep/config-abrt.yaml
   - name: test
     steps:
-      - pytests: multihost_test/Sanity
+      - pytests: multihost_test/bz_automation
         git: ../sssd
         args: -m tier1
         ssh_transport: openssh
