@@ -27,6 +27,11 @@ def pytest_configure():
     pytest.num_others = 0
 
 
+def execute_cmd(session_multihost, command):
+    cmd = session_multihost.client[0].run_command(command)
+    return cmd
+
+
 @pytest.fixture(scope="class")
 def multihost(session_multihost, request):
     """ Multihost fixture to be used by tests """
@@ -66,5 +71,23 @@ def create_localusers(session_multihost, request):
                                                 "/etc/pam.d/system-auth")
         session_multihost.client[0].run_command("userdel -rf local_anuj")
         session_multihost.client[0].run_command("userdel -rf pamtest1")
+
+    request.addfinalizer(restore_conf)
+
+
+@pytest.fixture(scope='class')
+def unlimited_ssh(session_multihost, request):
+    """ create users for test """
+    execute_cmd(session_multihost, "cp -vf /etc/security/limits.conf /tmp/limits.conf_anuj")
+    user = "anuj_test"
+    execute_cmd(session_multihost, "yum update -y pam")
+    execute_cmd(session_multihost, "useradd anuj_test")
+    execute_cmd(session_multihost, f"echo password123 | passwd --stdin {user}")
+    execute_cmd(session_multihost, 'echo "anuj_test hard nofile -1" >> "/etc/security/limits.conf"')
+
+    def restore_conf():
+        """ Restore """
+        execute_cmd(session_multihost, "cp -vf /tmp/limits.conf_anuj /etc/security/limits.conf")
+        execute_cmd(session_multihost, "userdel -rf anuj_test")
 
     request.addfinalizer(restore_conf)
