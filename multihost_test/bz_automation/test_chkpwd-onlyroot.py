@@ -9,7 +9,7 @@ def exceute_cmd(multihost, command):
     return cmd
 
 
-@pytest.mark.tier2
+@pytest.mark.tier1
 class TestPamBz(object):
     def test_chkpwd_onlyroot(self, multihost):
         """
