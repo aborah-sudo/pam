@@ -12,7 +12,7 @@ def execute_cmd(multihost, command):
 
 @pytest.mark.tier1
 class TestPamPwquality(object):
-    def test_simple_test_system_auth(self, multihost, create_localusers):
+    def test_simple_test_system_auth(self, multihost, bkp_pam_config, create_localusers):
         """
         :title: Sanity tests for pam_pwquality.so minlen,
          dcredit, ucredit, lcredit, ocredit
@@ -60,7 +60,7 @@ class TestPamPwquality(object):
         # right password
         execute_cmd(multihost, f"echo Pass#donew1 | passwd --stdin local_anuj")
 
-    def test_pam_retry_difok(self, multihost, create_localusers):
+    def test_pam_retry_difok(self, multihost, bkp_pam_config, create_localusers):
         """
         :title: Sanity tests for pam_pwquality.so with difok, retry
         :id: e7c4db96-eaf9-11eb-8fbb-845cf3eff344
@@ -109,7 +109,7 @@ class TestPamPwquality(object):
             execute_cmd(multihost, "sh /tmp/pam_pwquality.sh  "
                                    "local_anuj jf@#FafR3dh4T1nC!!F 3214 3214")
 
-    def test_pam_gecoscheck(self, multihost, create_localusers):
+    def test_pam_gecoscheck(self, multihost, bkp_pam_config, create_localusers):
         """
         :title: Sanity tests for pam_pwquality.so gecoscheck
         :id: 60afc548-f063-11eb-9639-845cf3eff344
@@ -129,7 +129,7 @@ class TestPamPwquality(object):
             execute_cmd(multihost, "sh /tmp/pam_pwquality.sh  "
                                    "pamtest1 pamtest1 rYb4aicraK rYb4aicraK")
 
-    def test_pam_maxclassrepeat(self, multihost, create_localusers):
+    def test_pam_maxclassrepeat(self, multihost, bkp_pam_config, create_localusers):
         """
         :title: Sanity tests for pam_pwquality.so maxclassrepeat
         :id: f8ba83e6-f063-11eb-b434-845cf3eff344
