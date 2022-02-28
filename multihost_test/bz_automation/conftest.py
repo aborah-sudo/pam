@@ -58,7 +58,7 @@ def backupsssdconf(session_multihost, request):
 
 
 @pytest.fixture(scope='function')
-def create_localusers(session_multihost, request):
+def bkp_pam_config(session_multihost, request):
     """ create users for test """
     session_multihost.client[0].run_command("cp -vf /etc/pam.d/system-auth /etc/pam.d/system-auth_anuj")
     session_multihost.client[0].run_command("cp -vf /etc/security/opasswd /etc/security/opasswd_anuj")
@@ -68,23 +68,33 @@ def create_localusers(session_multihost, request):
     session_multihost.client[0].run_command("cp -vf /etc/security/access.conf /etc/security/access.conf_anuj")
     session_multihost.client[0].run_command("cp -vf /etc/pam.d/sshd /etc/pam.d/sshd_anuj")
     session_multihost.client[0].run_command("cp -vf /etc/pam.d/password-auth /etc/pam.d/password-auth_anuj")
-    session_multihost.client[0].run_command("useradd local_anuj")
-    session_multihost.client[0].run_command("useradd pamtest1")
-    session_multihost.client[0].run_command("groupadd testgroup")
 
     def restoresssdconf():
         """ Restore """
         session_multihost.client[0].run_command("cp -vf /etc/pam.d/system-auth_anuj /etc/pam.d/system-auth")
         session_multihost.client[0].run_command("cp -vf /etc/security/opasswd_anuj /etc/security/opasswd")
-        session_multihost.client[0].run_command("userdel -rf local_anuj")
-        session_multihost.client[0].run_command("userdel -rf pamtest1")
-        session_multihost.client[0].run_command("groupdel testgroup")
         session_multihost.client[0].run_command("cp -vf /etc/bashrc_anuj /etc/bashrc")
         session_multihost.client[0].run_command("cp -vf /etc/pam.d/su-l_anuj /etc/pam.d/su-l")
         session_multihost.client[0].run_command("cp -vf /etc/security/access.conf_anuj /etc/security/access.conf")
         session_multihost.client[0].run_command("cp -vf /etc/pam.d/sshd_anuj /etc/pam.d/sshd")
         session_multihost.client[0].run_command("cp -vf /etc/pam.d/password-auth_anuj /etc/pam.d/password-auth")
         session_multihost.client[0].run_command("cp -vf /etc/pam.d/su_anuj /etc/pam.d/su")
+
+    request.addfinalizer(restoresssdconf)
+
+
+@pytest.fixture(scope='function')
+def create_localusers(session_multihost, request):
+    """ create users for test """
+    session_multihost.client[0].run_command("useradd local_anuj")
+    session_multihost.client[0].run_command("useradd pamtest1")
+    session_multihost.client[0].run_command("groupadd testgroup")
+
+    def restoresssdconf():
+        """ Restore """
+        session_multihost.client[0].run_command("userdel -rf local_anuj")
+        session_multihost.client[0].run_command("userdel -rf pamtest1")
+        session_multihost.client[0].run_command("groupdel testgroup")
 
     request.addfinalizer(restoresssdconf)
 
@@ -103,5 +113,17 @@ def unlimited_ssh(session_multihost, request):
         """ Restore """
         execute_cmd(session_multihost, "cp -vf /tmp/limits.conf_anuj /etc/security/limits.conf")
         execute_cmd(session_multihost, "userdel -rf anuj_test")
+
+    request.addfinalizer(restore_conf)
+
+
+@pytest.fixture(scope='function')
+def create_system_user(session_multihost, request):
+    """ create users for test """
+    execute_cmd(session_multihost, "useradd -u 101 systest")
+
+    def restore_conf():
+        """ Restore """
+        execute_cmd(session_multihost, "userdel -rf systest")
 
     request.addfinalizer(restore_conf)

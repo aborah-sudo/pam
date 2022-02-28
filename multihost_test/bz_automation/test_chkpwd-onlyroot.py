@@ -36,7 +36,7 @@ class TestPamBz(object):
         exceute_cmd(multihost, f"userdel -rf {username1}")
         exceute_cmd(multihost, f"userdel -rf {username2}")
 
-    def test_bz675835(self, multihost, create_localusers):
+    def test_bz675835(self, multihost, bkp_pam_config, create_localusers):
         """
         :title: bz675835-RFE-Please-support-nodefgroup-in-pam-access
         :id: a9c10cf2-85c7-11ec-9ed5-845cf3eff344
@@ -60,3 +60,16 @@ class TestPamBz(object):
             exceute_cmd(multihost, "sh /tmp/bz675835.sh local_anuj x")
         with pytest.raises(subprocess.CalledProcessError):
             exceute_cmd(multihost, "sh /tmp/bz675835.sh pamtest1 x")
+
+    def test_1949137(self, multihost, bkp_pam_config, create_system_user):
+        """
+        :title: pam_usertype has flawed logic for system accounts.
+        :id: fe3e1048-9483-11ec-b9bb-845cf3eff344
+        :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1949137
+        """
+        file_location1 = "/multihost_test/bz_automation/script/system-auth"
+        multihost.client[0].transport.put_file(os.getcwd() +
+                                               file_location1,
+                                               '/etc/pam.d/system-auth')
+        # with pytest.raises(subprocess.CalledProcessError):
+        #     exceute_cmd(multihost, "su - systest")
