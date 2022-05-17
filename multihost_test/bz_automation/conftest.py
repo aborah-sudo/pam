@@ -127,3 +127,18 @@ def create_system_user(session_multihost, request):
         execute_cmd(session_multihost, "userdel -rf systest")
 
     request.addfinalizer(restore_conf)
+
+
+def exceute_cmd(session_multihost, command):
+    cmd = session_multihost.client[0].run_command(command)
+    return cmd
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_session(session_multihost, request):
+    """
+    Session fixture which calls fixture in order before tests run
+    :param obj session_multihost: multihost object
+    :param obj request: pytest request object
+    """
+    execute_cmd(session_multihost, "yum update -y pam")
