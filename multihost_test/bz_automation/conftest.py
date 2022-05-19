@@ -87,6 +87,7 @@ def bkp_pam_config(session_multihost, request):
 def create_localusers(session_multihost, request):
     """ create users for test """
     session_multihost.client[0].run_command("useradd local_anuj")
+    execute_cmd(session_multihost, f"echo password123 | passwd --stdin local_anuj")
     session_multihost.client[0].run_command("useradd pamtest1")
     session_multihost.client[0].run_command("groupadd testgroup")
 
