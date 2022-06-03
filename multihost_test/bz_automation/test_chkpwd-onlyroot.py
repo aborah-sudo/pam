@@ -90,6 +90,7 @@ class TestPamBz(object):
         multihost.client[0].run_command("mkdir /run/motd.d", raiseonerr=False)
         message = "Welcome to this system"
         execute_cmd(multihost, f'echo "{message}" > /run/motd.d/welcome')
+        execute_cmd(multihost, "restorecon -Rv /run/motd.d")
         cmd = execute_cmd(multihost, "sh /tmp/2014458.sh")
         assert message in cmd.stdout_text
         execute_cmd(multihost, 'rm -vf /run/motd.d/welcome')
