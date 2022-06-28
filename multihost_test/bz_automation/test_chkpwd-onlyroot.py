@@ -2,6 +2,7 @@
 import pytest
 import subprocess
 import os
+from sssd.testlib.common.utils import SSHClient
 
 
 def execute_cmd(multihost, command):
@@ -61,7 +62,7 @@ class TestPamBz(object):
         with pytest.raises(subprocess.CalledProcessError):
             execute_cmd(multihost, "sh /tmp/bz675835.sh pamtest1 x")
 
-    def test_1949137(self, multihost, bkp_pam_config, create_system_user):
+    def test_1949137(self, multihost, bkp_pam_config, create_system_user, create_localusers):
         """
         :title: pam_usertype has flawed logic for system accounts.
         :id: fe3e1048-9483-11ec-b9bb-845cf3eff344
@@ -71,8 +72,9 @@ class TestPamBz(object):
         multihost.client[0].transport.put_file(os.getcwd() +
                                                file_location1,
                                                '/etc/pam.d/system-auth')
-        # with pytest.raises(subprocess.CalledProcessError):
-        #     execute_cmd(multihost, "su - systest")
+        ssh1 = SSHClient(multihost.client[0].ip, username="local_anuj", password="password123")
+        (result, result1, exit_status) = ssh1.execute_cmd('su - systest', stdin="password123")
+        assert "Password: su: Authentication failure" in result1.readlines()[0]
 
     def test_2014458(self, multihost, create_localusers):
         """
