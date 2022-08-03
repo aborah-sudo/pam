@@ -20,6 +20,7 @@ class TestPamBz(object):
         :id: df4ef7e0-a754-11ec-8300-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1978029
         """
+        execute_cmd(multihost, "yum install policycoreutils-python-utils")
         execute_cmd(multihost, "authselect select sssd --force")
         execute_cmd(multihost, "authselect enable-feature with-faillock")
         if "faillock" not in execute_cmd(multihost, "ls /var/log/").stdout_text:
