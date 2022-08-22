@@ -60,27 +60,29 @@ def backupsssdconf(session_multihost, request):
 @pytest.fixture(scope='function')
 def bkp_pam_config(session_multihost, request):
     """ create users for test """
-    execute_cmd(session_multihost, "cp -vf /etc/pam.d/system-auth /etc/pam.d/system-auth_anuj")
-    execute_cmd(session_multihost, "cp -vf /etc/security/pwhistory.conf /etc/security/pwhistory.conf_anuj")
-    execute_cmd(session_multihost, "cp -vf /etc/security/opasswd /etc/security/opasswd_anuj")
-    execute_cmd(session_multihost, "cp -vf /etc/bashrc /etc/bashrc_anuj")
-    execute_cmd(session_multihost, "cp -vf /etc/pam.d/su /etc/pam.d/su_anuj")
-    execute_cmd(session_multihost, "cp -vf /etc/pam.d/su-l /etc/pam.d/su-l_anuj")
-    execute_cmd(session_multihost, "cp -vf /etc/security/access.conf /etc/security/access.conf_anuj")
-    execute_cmd(session_multihost, "cp -vf /etc/pam.d/sshd /etc/pam.d/sshd_anuj")
-    execute_cmd(session_multihost, "cp -vf /etc/pam.d/password-auth /etc/pam.d/password-auth_anuj")
+    for bkp in ['/etc/pam.d/system-auth',
+                '/etc/security/pwhistory.conf',
+                '/etc/security/opasswd',
+                '/etc/bashrc',
+                '/etc/pam.d/su',
+                '/etc/pam.d/su-l',
+                '/etc/security/access.conf',
+                '/etc/pam.d/sshd',
+                '/etc/pam.d/password-auth']:
+        execute_cmd(session_multihost, f"cp -vf {bkp} {bkp}_anuj")
 
     def restoresssdconf():
         """ Restore """
-        execute_cmd(session_multihost, "cp -vf /etc/pam.d/system-auth_anuj /etc/pam.d/system-auth")
-        execute_cmd(session_multihost, "cp -vf /etc/security/pwhistory.conf_anuj /etc/security/pwhistory.conf")
-        execute_cmd(session_multihost, "cp -vf /etc/security/opasswd_anuj /etc/security/opasswd")
-        execute_cmd(session_multihost, "cp -vf /etc/bashrc_anuj /etc/bashrc")
-        execute_cmd(session_multihost, "cp -vf /etc/pam.d/su-l_anuj /etc/pam.d/su-l")
-        execute_cmd(session_multihost, "cp -vf /etc/security/access.conf_anuj /etc/security/access.conf")
-        execute_cmd(session_multihost, "cp -vf /etc/pam.d/sshd_anuj /etc/pam.d/sshd")
-        execute_cmd(session_multihost, "cp -vf /etc/pam.d/password-auth_anuj /etc/pam.d/password-auth")
-        execute_cmd(session_multihost, "cp -vf /etc/pam.d/su_anuj /etc/pam.d/su")
+        for bkp in ['/etc/pam.d/system-auth',
+                    '/etc/security/pwhistory.conf',
+                    '/etc/security/opasswd',
+                    '/etc/bashrc',
+                    '/etc/pam.d/su',
+                    '/etc/pam.d/su-l',
+                    '/etc/security/access.conf',
+                    '/etc/pam.d/sshd',
+                    '/etc/pam.d/password-auth']:
+            execute_cmd(session_multihost, f"mv -vf {bkp}_anuj {bkp}")
 
     request.addfinalizer(restoresssdconf)
 
