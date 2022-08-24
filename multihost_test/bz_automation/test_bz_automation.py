@@ -33,5 +33,6 @@ class TestPamBz(object):
         ssh1 = SSHClient(client_e, username=user, password="password123")
         (result1, result2, result3) =  ssh1.execute_cmd("id")
         ssh1.close()
+        result = result1.readlines()
         for id_id in ['uid=', 'gid=', 'groups=', 'anuj_test']:
-            assert id_id in result1.read()
+            assert id_id in result[0]
