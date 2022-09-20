@@ -1,0 +1,13 @@
+
+auth        sufficient    pam_unix.so
+auth        required      pam_deny.so
+
+# allow test pass when run as testuser
+account     sufficient    pam_succeed_if.so use_uid user = testUser
+account     required      pam_unix.so
+
+password    required      pam_deny.so
+
+session     required      pam_limits.so
+session     required      pam_unix.so
+
