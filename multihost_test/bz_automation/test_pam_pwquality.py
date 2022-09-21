@@ -148,3 +148,23 @@ class TestPamPwquality(object):
         with pytest.raises(subprocess.CalledProcessError):
             execute_cmd(multihost, "sh /tmp/pam_pwquality.sh  "
                                    "local_anuj R3dh4T1nC fG33GjjFDFd!@@@32 fG33GjjFDFd!@@@32")
+
+    def test_bz_769694(self, multihost,
+                       bkp_pam_config,
+                       create_localusers):
+        """
+        :title: RFE-Adding-the-size-option-for-tmpfs
+        :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=769694
+        :id: 925dc91c-39b6-11ed-b859-845cf3eff344
+        """
+        execute_cmd(multihost, "echo 'session required pam_namespace.so'"
+                               " >> /etc/pam.d/system-auth")
+        execute_cmd(multihost, "echo '/dev/shm tmpfs tmpfs:mntopts=size=20M'"
+                               " >>/etc/security/namespace.conf")
+        root_shm = execute_cmd(multihost, "df -lh |grep '/dev/shm'"
+                                          " |awk '{print $2}'").stdout_text.split()[0]
+        user_shm = execute_cmd(multihost, "su -l -c 'df -lh'"
+                                          " - local_anuj |grep '/dev/shm' | "
+                                          "awk '{print $2}'").stdout_text.split()[0]
+        assert user_shm == '20M'
+        assert root_shm != user_shm
