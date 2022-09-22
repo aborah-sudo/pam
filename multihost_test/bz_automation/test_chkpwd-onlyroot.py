@@ -84,7 +84,7 @@ class TestPamBz(object):
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2014458
         """
         client = multihost.client[0]
-        file_location = '/script/2014458.sh'
+        file_location = '/multihost_test/bz_automation/script/2014458.sh'
         client.transport.put_file(os.path.dirname(os.path.abspath(__file__))
                                   + file_location,
                                   '/tmp/2014458.sh')
@@ -97,3 +97,39 @@ class TestPamBz(object):
         assert message in cmd.stdout_text
         execute_cmd(multihost, 'rm -vf /run/motd.d/welcome')
         execute_cmd(multihost, 'rm -vf /tmp/2014458.sh')
+
+    def test_pam_unix(self, multihost):
+        """
+        :title: pam authentication from root/user
+        :id: da0bf07e-38f6-11ed-93d7-845cf3eff344
+        """
+        PASSWORD = "TestPassword"
+        MD5PASS = "'$1$6fB26h/v$Ho7JpVkiq6Qd5GfZv0qDR/'"
+        CRYPTPASS = 'C/Zxkuzt3sBiI'
+        TmpDir = "/tmp/tmp.N9BJmxhaTQ"
+        client = multihost.client[0]
+        execute_cmd(multihost, f"rm -vfr {TmpDir}")
+        execute_cmd(multihost, f"mkdir {TmpDir}")
+        execute_cmd(multihost, f'chmod a+rwx {TmpDir}')
+        execute_cmd(multihost, f"pushd {TmpDir}")
+        execute_cmd(multihost, "useradd testUser")
+        execute_cmd(multihost, f"echo {PASSWORD} | passwd --stdin testUser")
+        CMD_PAMTEST = f"{TmpDir}/pamtest"
+        for f_file in ["pamtest.c", "pamtest"]:
+            file_location = f"/multihost_test/bz_automation/script/{f_file}"
+            client.transport.put_file(os.path.dirname(os.path.abspath(__file__)) + file_location, f'/tmp/{f_file}')
+        execute_cmd(multihost, f"gcc -Wall -g -o {CMD_PAMTEST} /tmp/pamtest.c -lpam -ldl")
+        execute_cmd(multihost, "export LANG=C")
+        execute_cmd(multihost, "ls -la")
+        execute_cmd(multihost, ">/etc/pam.d/pamtest")
+        execute_cmd(multihost, "cp -vf /tmp/pamtest /etc/pam.d/pamtest")
+        for user in ['root', 'testUser']:
+            execute_cmd(multihost, f"usermod -p {MD5PASS} testUser")
+            execute_cmd(multihost, f'su - {user} -c {CMD_PAMTEST}')
+            execute_cmd(multihost, f"usermod -p {CRYPTPASS} testUser")
+            execute_cmd(multihost, f'su - {user} -c {CMD_PAMTEST}')
+            for password in ["'!!'", "'*'", "'xy'", "'$1'"]:
+                execute_cmd(multihost, f"usermod -p {password} testUser")
+            with pytest.raises(subprocess.CalledProcessError):
+                execute_cmd(multihost, f'su - {user} -c {CMD_PAMTEST}')
+        execute_cmd(multihost, "userdel -rf testUser")
