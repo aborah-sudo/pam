@@ -93,4 +93,4 @@ class TestPamBz(object):
             execute_cmd(multihost, f"rm -vf {i}")
         execute_cmd(multihost, 'rm -vfr /root/.xauth')
         execute_cmd(multihost, f"userdel -rf {TUSER}")
-        execute_cmd(multihost, "cat /tmp/xauthlog | wc -l | grep 2")
+        assert int(execute_cmd(multihost, "cat /tmp/xauthlog | wc -l" ).stdout_text.split()[0]) >= 2
