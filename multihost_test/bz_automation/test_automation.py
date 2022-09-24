@@ -75,7 +75,7 @@ class TestPamBz(object):
         """
         TUSER = "pam-xauth-tester"
         SLOG = "/var/log/secure"
-        execute_cmd(multihost, 'rm -f /tmp/xauthlog')
+        execute_cmd(multihost, '> /tmp/xauthlog')
         execute_cmd(multihost, f"useradd {TUSER}")
         execute_cmd(multihost, "cp -f myxauth /myxauth")
         execute_cmd(multihost, 'sed -i "s/pam_xauth\.so/pam_xauth\.so '

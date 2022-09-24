@@ -156,4 +156,4 @@ def setup_session(session_multihost, request):
     :param obj request: pytest request object
     """
     execute_cmd(session_multihost, "yum update -y pam")
-    execute_cmd(session_multihost, "yum install -y gcc")
+    execute_cmd(session_multihost, "yum install -y gcc pam-devel")
