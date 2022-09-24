@@ -83,11 +83,10 @@ class TestPamBz(object):
         :id: 2c54e376-d5e8-11ec-87cb-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2014458
         """
-        client = multihost.client[0]
         file_location = '/multihost_test/bz_automation/script/2014458.sh'
-        client.transport.put_file(os.path.dirname(os.path.abspath(__file__))
-                                  + file_location,
-                                  '/tmp/2014458.sh')
+        multihost.client[0].transport.put_file(os.getcwd() +
+                                               file_location,
+                                               '/tmp/2014458.sh')
         execute_cmd(multihost, f"chmod 755 /tmp/2014458.sh")
         multihost.client[0].run_command("mkdir /run/motd.d", raiseonerr=False)
         message = "Welcome to this system"
@@ -117,7 +116,9 @@ class TestPamBz(object):
         CMD_PAMTEST = f"{TmpDir}/pamtest"
         for f_file in ["pamtest.c", "pamtest"]:
             file_location = f"/multihost_test/bz_automation/script/{f_file}"
-            client.transport.put_file(os.path.dirname(os.path.abspath(__file__)) + file_location, f'/tmp/{f_file}')
+            client.transport.put_file(os.getcwd()
+                                      + file_location,
+                                      f'/tmp/{f_file}')
         execute_cmd(multihost, f"gcc -Wall -g -o {CMD_PAMTEST} /tmp/pamtest.c -lpam -ldl")
         execute_cmd(multihost, "export LANG=C")
         execute_cmd(multihost, "ls -la")
