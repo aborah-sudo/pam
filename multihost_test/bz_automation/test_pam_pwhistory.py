@@ -9,8 +9,9 @@ def execute_cmd(multihost, command):
     return cmd
 
 
+@pytest.mark.tier1
 class TestPamBz(object):
-    @pytest.mark.shift_left
+    '''
     def test_2068461(self, multihost, create_localusers, bkp_pam_config):
         """
         :title: RFE allow to configure pam_pwhistory with configuration file.
@@ -47,8 +48,8 @@ class TestPamBz(object):
                        'x86_64_baseos_rpms',
                        'ANUJ_AM_I_HI']:
             execute_cmd(multihost, f"echo {passwd} | passwd --stdin local_anuj")
-
-    @pytest.mark.tier1
+    '''
+    
     def test_pwhistory_enforces_root(self, multihost, bkp_pam_config, create_localusers):
         """
         :title: bz824858-pam-pwhistory-enforces-root-to-password-change
