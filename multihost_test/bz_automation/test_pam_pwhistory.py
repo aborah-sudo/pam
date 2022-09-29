@@ -11,7 +11,6 @@ def execute_cmd(multihost, command):
 
 @pytest.mark.tier1
 class TestPamBz(object):
-    '''
     def test_2068461(self, multihost, create_localusers, bkp_pam_config):
         """
         :title: RFE allow to configure pam_pwhistory with configuration file.
@@ -48,7 +47,6 @@ class TestPamBz(object):
                        'x86_64_baseos_rpms',
                        'ANUJ_AM_I_HI']:
             execute_cmd(multihost, f"echo {passwd} | passwd --stdin local_anuj")
-    '''
     
     def test_pwhistory_enforces_root(self, multihost, bkp_pam_config, create_localusers):
         """
