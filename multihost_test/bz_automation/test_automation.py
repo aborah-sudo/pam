@@ -5,6 +5,7 @@ import os
 import time
 import paramiko
 from sssd.testlib.common.utils import SSHClient
+from sssd.testlib.common.expect import pexpect_ssh
 
 
 def execute_cmd(multihost, command):
@@ -110,3 +111,19 @@ class TestPamBz(object):
             assert "Password: su: Authentication failure" in result1.readlines()[0]
         assert "Consecutive login failures for user root account temporarily locked" \
                not in execute_cmd(multihost, "cat /var/log/secure").stdout_text
+
+    def test_2091062(self, multihost, create_localusers):
+        """
+        :title: "error scanning directory" errors from pam_motd
+        :id: 556ae15e-560b-11ed-850a-845cf3eff344
+        :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2091062
+        """
+        execute_cmd(multihost, "> /var/log/secure")
+        for dirc in ['/run/motd.d', '/etc/motd.d', '/usr/lib/motd.d']:
+            execute_cmd(multihost, f"rm -vfr {dirc}")
+        client = pexpect_ssh(multihost.client[0].sys_hostname,
+                             "local_anuj", 'password123', debug=False)
+        client.login(login_timeout=30, sync_multiplier=5, auto_prompt_reset=False)
+        client.logout()
+        assert "pam_motd: error scanning directory" not in \
+               execute_cmd(multihost, "cat /var/log/secure").stdout_text
