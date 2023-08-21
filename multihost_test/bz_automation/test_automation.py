@@ -1,12 +1,11 @@
 
 import pytest
 import subprocess
-import os
 import time
 import paramiko
 from sssd.testlib.common.utils import SSHClient
 from sssd.testlib.common.expect import pexpect_ssh
-
+from sssd.testlib.common.ssh2_python import check_login_client
 
 def execute_cmd(multihost, command):
     cmd = multihost.client[0].run_command(command)
@@ -151,3 +150,31 @@ class TestPamBz(object):
         client.run_command(f"echo password123 | passwd --stdin local_anuj")
         password = client.run_command("grep local_anuj /etc/shadow").stdout_text
         assert password.split(":")[1].startswith("$2b$")
+
+    def test_pam_faillock_audit(self, multihost, create_localusers, bkp_pam_config):
+        """
+        :title: Pam_faillock audit events duplicate uid.
+        :id: c62fda84-401b-11ee-90bd-845cf3eff344
+        :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2231556
+        :setup:
+            1. Enable pam_faillock in the PAM stack
+            2. Modify pam_faillock "deny" option in faillock.conf to
+                lock the user at the first attempt (deny=1)
+        :steps:
+            1. Authenticate as user and input an incorrect password
+            2. Check that audit file contains the correct format.
+        :expectedresults:
+            1. Authentication should fail.
+            2. Pam_faillock audit must display messages with the correct format:
+                op=pam_faillock suid=UID. Where UID is the ID of the user trying to authenticate.
+        """
+        client = multihost.client[0]
+        uid = client.run_command("id -u local_anuj").stdout_text.split()[0]
+        client.run_command("authselect enable-feature with-faillock")
+        client.run_command("echo 'deny = 1' >> /etc/security/faillock.conf")
+        client.run_command("> /var/log/audit/audit.log")
+        with pytest.raises(Exception):
+            check_login_client(multihost, "local_anuj", 'Secret1234')
+        time.sleep(3)
+        log_str = multihost.client[0].get_file_contents("/var/log/audit/audit.log").decode('utf-8')
+        assert f'op=pam_faillock suid="{uid}"' in log_str
