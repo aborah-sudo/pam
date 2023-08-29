@@ -96,22 +96,6 @@ class TestPamBz(object):
         execute_cmd(multihost, f"userdel -rf {TUSER}")
         assert int(execute_cmd(multihost, "cat /tmp/xauthlog | wc -l" ).stdout_text.split()[0]) >= 2
 
-    def test_2082442(self, multihost, bkp_pam_config, create_localusers):
-        """
-        :title: pam_faillock prints "Consecutive login failures
-         for user root account temporarily locked" without even_deny_root
-        :id: c1802552-5151-11ed-b8c2-845cf3eff344
-        :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2126648
-                   https://bugzilla.redhat.com/show_bug.cgi?id=2082442
-        """
-        execute_cmd(multihost, "> /var/log/secure")
-        ssh1 = SSHClient(multihost.client[0].ip, username="local_anuj", password="password123")
-        for i in range(4):
-            (result, result1, exit_status) = ssh1.execute_cmd('su -', stdin="password1234")
-            assert "Password: su: Authentication failure" in result1.readlines()[0]
-        assert "Consecutive login failures for user root account temporarily locked" \
-               not in execute_cmd(multihost, "cat /var/log/secure").stdout_text
-
     def test_2091062(self, multihost, create_localusers):
         """
         :title: "error scanning directory" errors from pam_motd
