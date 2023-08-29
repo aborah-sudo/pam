@@ -76,7 +76,7 @@ def bkp_pam_config(session_multihost, request):
     def restoresssdconf():
         """ Restore """
         for bkp in ['/etc/pam.d/system-auth',
-                    '/etc/security/pwhistory.conf',
+                    #'/etc/security/pwhistory.conf',
                     '/etc/security/opasswd',
                     '/etc/bashrc',
                     '/etc/pam.d/su',
