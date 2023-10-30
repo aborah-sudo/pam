@@ -127,3 +127,27 @@ class TestPamBz(object):
         client.logout()
         assert "pam_motd: error scanning directory" not in \
                execute_cmd(multihost, "cat /var/log/secure").stdout_text
+
+    def test_bcrypt_support(self, multihost, create_localusers, bkp_pam_config):
+        """
+        :title: Add support for bcrypt password hashes for local users
+        :id: f25c7438-6db5-11ee-a613-845cf3eff344
+        :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2218330
+        :steps:
+            1. Replace the string sha512 with blowfish in the /etc/pam.d/system-auth
+                and /etc/pam.d/password-auth files.
+            2. Set the password for the local_anuj.
+            3. Checks that the hashed password starts with $2b$, which is a signature for the Blowfish algorithm
+                (specifically the bcrypt version of Blowfish).
+                If the password's hash doesn't start with this signature, the assertion will fail.
+        :expectedresults:
+            1. Should Success
+            2. Should Success
+            3. Should Success
+        """
+        client = multihost.client[0]
+        client.run_command("sed -i s/sha512/blowfish/g /etc/pam.d/system-auth")
+        client.run_command("sed -i s/sha512/blowfish/g /etc/pam.d/password-auth")
+        client.run_command(f"echo password123 | passwd --stdin local_anuj")
+        password = client.run_command("grep local_anuj /etc/shadow").stdout_text
+        assert password.split(":")[1].startswith("$2b$")
