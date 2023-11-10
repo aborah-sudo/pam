@@ -3,6 +3,7 @@ import pytest
 import subprocess
 import time
 import paramiko
+import os
 from sssd.testlib.common.utils import SSHClient
 from sssd.testlib.common.expect import pexpect_ssh
 from sssd.testlib.common.ssh2_python import check_login_client
@@ -169,12 +170,18 @@ class TestPamBz(object):
                 op=pam_faillock suid=UID. Where UID is the ID of the user trying to authenticate.
         """
         client = multihost.client[0]
+        execute_cmd(multihost, "authselect select sssd --force")
+        execute_cmd(multihost, "authselect enable-feature with-faillock")
+        file_location = "/multihost_test/bz_automation/script/wrong_pass.sh"
+        multihost.client[0].transport.put_file(os.getcwd() +
+                                               file_location,
+                                               '/tmp/wrong_pass.sh')
         uid = client.run_command("id -u local_anuj").stdout_text.split()[0]
-        client.run_command("authselect enable-feature with-faillock")
+        client.run_command("cp -vf /etc/security/faillock.conf /etc/security/faillock.conf_anuj")
         client.run_command("echo 'deny = 1' >> /etc/security/faillock.conf")
         client.run_command("> /var/log/audit/audit.log")
-        with pytest.raises(Exception):
-            check_login_client(multihost, "local_anuj", 'Secret1234')
+        client.run_command("sh /tmp/wrong_pass.sh", raiseonerr=False)
         time.sleep(3)
         log_str = multihost.client[0].get_file_contents("/var/log/audit/audit.log").decode('utf-8')
-        assert f'op=pam_faillock suid="{uid}"' in log_str
+        client.run_command("cp -vf /etc/security/faillock.conf_anuj /etc/security/faillock.conf")
+        assert f'op=pam_faillock suid={uid}' in log_str
