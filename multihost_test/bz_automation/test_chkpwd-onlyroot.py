@@ -134,3 +134,25 @@ class TestPamBz(object):
             with pytest.raises(subprocess.CalledProcessError):
                 execute_cmd(multihost, f'su - {user} -c {CMD_PAMTEST}')
         execute_cmd(multihost, "userdel -rf testUser")
+
+    def test_19810(self, multihost, bkp_pam_config):
+        """
+        :title: Faillock does not create tallydir
+        :id: 2533f790-abc4-11ee-bde9-845cf3eff344
+        :bugzilla: https://issues.redhat.com/browse/RHEL-19810
+        :steps:
+          1. Set dir option in /etc/security/faillock.conf with non-existence folder
+          2. Run "faillock" at command line.
+        :expectedresults:
+          1. Modification Should succeed
+          2. tallydir is created automatically
+        """
+        client = multihost.client[0]
+        client.run_command("rm -vfr /tmp/anuj", raiseonerr=False)
+        client.run_command("echo 'dir = /tmp/anuj' >> /etc/security/faillock.conf")
+        client.run_command("sed -i '5i auth [default=die] pam_faillock.so authfail' /etc/pam.d/system-auth")
+        client.run_command("sed -i '6i auth sufficient pam_faillock.so authsucc' /etc/pam.d/system-auth")
+        ssh1 = SSHClient(multihost.client[0].ip, username="local_anuj", password="password123")
+        (result, result1, exit_status) = ssh1.execute_cmd('su - local_anuj', stdin="password123")
+        client.run_command("faillock")
+        assert "Password: su: Authentication failure" not in result1.readlines()[0]

@@ -70,7 +70,8 @@ def bkp_pam_config(session_multihost, request):
                 '/etc/pam.d/sshd',
                 '/etc/pam.d/password-auth',
                 '/etc/security/limits.conf',
-                '/etc/security/namespace.conf']:
+                '/etc/security/namespace.conf',
+                '/etc/security/faillock.conf']:
         execute_cmd(session_multihost, f"cp -vf {bkp} {bkp}_anuj")
 
     def restoresssdconf():
@@ -85,7 +86,8 @@ def bkp_pam_config(session_multihost, request):
                     '/etc/pam.d/sshd',
                     '/etc/pam.d/password-auth',
                     '/etc/security/limits.conf',
-                    '/etc/security/namespace.conf']:
+                    '/etc/security/namespace.conf',
+                    '/etc/security/faillock.conf']:
             execute_cmd(session_multihost, f"mv -vf {bkp}_anuj {bkp}")
 
     request.addfinalizer(restoresssdconf)
