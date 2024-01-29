@@ -136,7 +136,7 @@ class TestPamBz(object):
                 execute_cmd(multihost, f'su - {user} -c {CMD_PAMTEST}')
         execute_cmd(multihost, "userdel -rf testUser")
 
-    def test_19810(self, multihost, bkp_pam_config):
+    def test_19810(self, multihost, bkp_pam_config, create_localusers):
         """
         :title: Faillock does not create tallydir
         :id: 2533f790-abc4-11ee-bde9-845cf3eff344
