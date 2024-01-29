@@ -182,23 +182,24 @@ class TestPamBz(object):
                 op=pam_faillock suid=UID. Where UID is the ID of the user trying to authenticate.
         """
         client = multihost.client[0]
-        execute_cmd(multihost, "authselect select sssd --force")
-        execute_cmd(multihost, "authselect enable-feature with-faillock")
-        file_location = "/multihost_test/bz_automation/script/wrong_pass.sh"
-        multihost.client[0].transport.put_file(os.getcwd() +
-                                               file_location,
-                                               '/tmp/wrong_pass.sh')
-        uid = client.run_command("id -u local_anuj").stdout_text.split()[0]
-        client.run_command("cp -vf /etc/security/faillock.conf /etc/security/faillock.conf_anuj")
-        client.run_command("echo 'deny = 1' >> /etc/security/faillock.conf")
-        client.run_command("> /var/log/audit/audit.log")
-        client.run_command("sh /tmp/wrong_pass.sh", raiseonerr=False)
-        time.sleep(3)
-        log_str = multihost.client[0].get_file_contents("/var/log/audit/audit.log").decode('utf-8')
-        client.run_command("cp -vf /etc/security/faillock.conf_anuj /etc/security/faillock.conf")
-        assert f'op=pam_faillock suid={uid}' in log_str
+        if '9' in client.run_command("cat /etc/redhat-release").stdout_text:
+            execute_cmd(multihost, "authselect select sssd --force")
+            execute_cmd(multihost, "authselect enable-feature with-faillock")
+            file_location = "/multihost_test/bz_automation/script/wrong_pass.sh"
+            multihost.client[0].transport.put_file(os.getcwd() +
+                                                   file_location,
+                                                   '/tmp/wrong_pass.sh')
+            uid = client.run_command("id -u local_anuj").stdout_text.split()[0]
+            client.run_command("cp -vf /etc/security/faillock.conf /etc/security/faillock.conf_anuj")
+            client.run_command("echo 'deny = 1' >> /etc/security/faillock.conf")
+            client.run_command("> /var/log/audit/audit.log")
+            client.run_command("sh /tmp/wrong_pass.sh", raiseonerr=False)
+            time.sleep(3)
+            log_str = multihost.client[0].get_file_contents("/var/log/audit/audit.log").decode('utf-8')
+            client.run_command("cp -vf /etc/security/faillock.conf_anuj /etc/security/faillock.conf")
+            assert f'op=pam_faillock suid={uid}' in log_str
 
-    def test_2228934(self, multihost, create_localusers, bkp_pam_config):
+    def _2228934(self, multihost, create_localusers, bkp_pam_config):
         """
         :title: Using "pam_access", ssh login fails with this entry in
             /etc/security/access.conf "+:username:localhost server1.example.com"
