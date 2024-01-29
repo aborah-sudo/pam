@@ -2,6 +2,7 @@
 import pytest
 import subprocess
 import os
+import time
 from sssd.testlib.common.utils import SSHClient
 
 
@@ -156,3 +157,44 @@ class TestPamBz(object):
         (result, result1, exit_status) = ssh1.execute_cmd('su - local_anuj', stdin="password123")
         client.run_command("faillock")
         assert "Password: su: Authentication failure" not in result1.readlines()[0]
+
+    def test_16727(self, multihost, bkp_pam_config, create_localusers):
+        """
+        :title: PAM can't identify the user when running from external host
+        :id: ae78e4d6-ba95-11ee-8362-845cf3eff344
+        :bugzilla: https://issues.redhat.com/browse/RHEL-16727
+        :steps:
+          1. Create "local_anuj" user and set password
+          2. Add user to testgroup group
+          3. Configure "local_anuj" user in sudoers to be able to sudo without password
+          4. Configure /etc/pam.d/sudo
+          5. Configure /etc/pam.d/su
+          6. ssh into the machine as "local_anuj" and issue "sudo su"
+          7. Check /var/log/secure and make sure that the log is present
+
+        :expectedresults:
+          1. User should be created
+          2. User should be added to group
+          3. This line should be added: testuser        ALL=(ALL)    NOPASSWD: ALL
+          4. Comment out : "account    include      system-auth" and replace with:
+            account    sufficient   pam_wheel.so trust group=users debug
+          5. This line should be added: account    sufficient
+            pam_wheel.so trust group=users debug
+          6. Ssh should success
+          7. This line should present :
+            su[2281]: pam_wheel(su:account): Access granted to 'testuser' for 'root'
+        """
+        client = multihost.client[0]
+        client.run_command("usermod -G testgroup local_anuj")
+        client.run_command("echo 'local_anuj        ALL=(ALL)    NOPASSWD: ALL' >> /etc/sudoers")
+        client.run_command("sed -i 's/^account.*/account    sufficient   "
+                           "pam_wheel.so trust group=testgroup debug/g' /etc/pam.d/sudo")
+        client.run_command("sed -i '/account/iaccount    sufficient   "
+                           "pam_wheel.so trust group=testgroup debug' /etc/pam.d/su")
+        client.run_command("> /var/log/secure")
+        time.sleep(1)
+        ssh1 = SSHClient(multihost.client[0].ip, username="local_anuj", password="password123")
+        ssh1.execute_cmd('sudo su -c "ls /root/"')
+        time.sleep(1)
+        assert "Access granted to 'local_anuj' for 'root'" \
+               in client.run_command("cat /var/log/secure").stdout_text
