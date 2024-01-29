@@ -8,9 +8,21 @@ from sssd.testlib.common.utils import SSHClient
 from sssd.testlib.common.expect import pexpect_ssh
 from sssd.testlib.common.ssh2_python import check_login_client
 
+
 def execute_cmd(multihost, command):
     cmd = multihost.client[0].run_command(command)
     return cmd
+
+
+def config_and_login(multihost, config):
+    """
+    Configure access.conf, check login and restore
+    """
+    client = multihost.client[0]
+    client.run_command(f"echo '{config}' >> /etc/security/access.conf")
+    client.run_command("echo '-:ALL:ALL' >> /etc/security/access.conf")
+    client.run_command("sh /tmp/bz824858.sh")
+    client.run_command("cp -vf /etc/security/access.conf_anuj /etc/security/access.conf")
 
 
 @pytest.mark.tier1
@@ -185,3 +197,32 @@ class TestPamBz(object):
         log_str = multihost.client[0].get_file_contents("/var/log/audit/audit.log").decode('utf-8')
         client.run_command("cp -vf /etc/security/faillock.conf_anuj /etc/security/faillock.conf")
         assert f'op=pam_faillock suid={uid}' in log_str
+
+    def test_2228934(self, multihost, create_localusers, bkp_pam_config):
+        """
+        :title: Using "pam_access", ssh login fails with this entry in
+            /etc/security/access.conf "+:username:localhost server1.example.com"
+        :id: 5b669434-35b9-11ee-b8b3-845cf3eff344
+        :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2228934
+        :steps:
+            1. Enable "with-pamaccess" feature using authselect
+            2. Configure  /etc/security/access.conf
+            3. Try to log in with the user
+        :expectedresults:
+            1. Should succeed
+            2. Should succeed
+            3. Should succeed
+        """
+        client = multihost.client[0]
+        file_location = "/multihost_test/bz_automation/script/bz824858.sh"
+        multihost.client[0].transport.put_file(os.getcwd() + file_location, '/tmp/bz824858.sh')
+        client.run_command("authselect select sssd --force")
+        client.run_command("authselect enable-feature with-pamaccess")
+        assert "with-pamaccess" in client.run_command("authselect current").stdout_text
+        for conf in ['+:local_anuj:localhost',
+                     '+:local_anuj: ::1',
+                     '+:local_anuj:127.0.0.1',
+                     '+:local_anuj:127.0.0.1 ::1',
+                     f'+:local_anuj:127.0.0.1 ::1 {client.sys_hostname}',
+                     f'+:local_anuj:127.0.0.1 ::1 {client.ip}']:
+            config_and_login(multihost, conf)
