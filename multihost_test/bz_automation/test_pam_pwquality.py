@@ -60,7 +60,7 @@ class TestPamPwquality(object):
         # right password
         execute_cmd(multihost, f"echo Pass#donew1 | passwd --stdin local_anuj")
 
-    def  _pam_retry_difok(self, multihost, bkp_pam_config, create_localusers):
+    def test_pam_retry_difok(self, multihost, bkp_pam_config, create_localusers):
         """
         :title: Sanity tests for pam_pwquality.so with difok, retry
         :id: e7c4db96-eaf9-11eb-8fbb-845cf3eff344
