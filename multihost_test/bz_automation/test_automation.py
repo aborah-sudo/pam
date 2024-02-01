@@ -199,7 +199,7 @@ class TestPamBz(object):
             client.run_command("cp -vf /etc/security/faillock.conf_anuj /etc/security/faillock.conf")
             assert f'op=pam_faillock suid={uid}' in log_str
 
-    def _2228934(self, multihost, create_localusers, bkp_pam_config):
+    def test_2228934(self, multihost, create_localusers, bkp_pam_config):
         """
         :title: Using "pam_access", ssh login fails with this entry in
             /etc/security/access.conf "+:username:localhost server1.example.com"

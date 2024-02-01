@@ -158,7 +158,7 @@ class TestPamBz(object):
         client.run_command("faillock")
         assert "Password: su: Authentication failure" not in result1.readlines()[0]
 
-    def _16727(self, multihost, bkp_pam_config, create_localusers):
+    def test_16727(self, multihost, bkp_pam_config, create_localusers):
         """
         :title: PAM can't identify the user when running from external host
         :id: ae78e4d6-ba95-11ee-8362-845cf3eff344
