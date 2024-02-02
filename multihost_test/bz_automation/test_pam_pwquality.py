@@ -65,6 +65,7 @@ class TestPamPwquality(object):
         :title: Sanity tests for pam_pwquality.so with difok, retry
         :id: e7c4db96-eaf9-11eb-8fbb-845cf3eff344
         """
+        execute_cmd(multihost, "rm -vfr /tmp/anuj")
         execute_cmd(multihost, "echo pass | passwd --stdin local_anuj")
         execute_cmd(multihost, "sed -i 's/.*pam_pwquality.*/password   "
                                "requisite pam_pwquality.so authtok_type=PAMTEST "
