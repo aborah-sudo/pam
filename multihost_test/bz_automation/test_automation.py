@@ -227,3 +227,59 @@ class TestPamBz(object):
                      f'+:local_anuj:127.0.0.1 ::1 {client.sys_hostname}',
                      f'+:local_anuj:127.0.0.1 ::1 {client.ip}']:
             config_and_login(multihost, conf)
+
+    def test_21244(self, multihost, create_localusers, bkp_pam_config):
+        """
+        :title: CVE-2024-22365 pam: allowing unpriledged user to block another user namespace
+        :id: f9e4f9b8-c57c-11ee-aa1d-845cf3eff344
+        :bugzilla: https://issues.redhat.com/browse/RHEL-21242
+                   https://issues.redhat.com/browse/RHEL-21244
+        :steps:
+            1. Change namespace.conf
+            2. Change password-auth
+            3. An unprivileged user can now place a FIFO at $HOME/tmp
+            4. Try to log in as this user with `pam_namespace` configured
+        :expectedresults:
+            1. $HOME/tmp /var/tmp/tmp-inst/ user:create root
+            2. session required pam_namespace.so
+            3. nobody$ mkfifo $HOME/tmp
+            4. Should not cause a local denial of service
+        """
+        client = multihost.client[0]
+        file_location = "/script/2014458.sh"
+        client.run_command("setenforce 0")
+        multihost.client[0].transport.put_file(os.getcwd() + file_location, '/tmp/2014458.sh')
+        client.run_command("echo '$HOME/tmp /var/tmp/tmp-inst/ user:create root' >> /etc/security/namespace.conf")
+        execute_cmd(multihost, "echo 'session required pam_namespace.so' >> /etc/pam.d/password-auth")
+        client.run_command("runuser -l  local_anuj -c 'mkfifo $HOME/tmp'")
+        with pytest.raises(Exception):
+            client.run_command("sh /tmp/2014458.sh")
+        client.run_command("rm -vf /tmp/2014458.sh")
+
+    def test_bz_2070532(self, multihost, bkp_pam_config):
+        """
+        :title: Changing UID_MIN ignores GID_MIN value in /etc/login.defs
+        :id: c6f49b14-9262-11ee-a30b-845cf3eff344
+        :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2070532
+        :steps:
+          1. Modify UID_MIN in /etc/login.defs. Change the minimum UID from 1000 to 5000
+          2. Add a user (u5k) and a group (g1k)
+          3. Check if the changes in /etc/passwd and /etc/group were successful
+          4. Cleanup
+        :expectedresults:
+          1. Modification Should succeed
+          2. User and Group should be added
+          3. Check should pass
+          4. Clean up should success
+        """
+        client = multihost.client[0]
+        client.run_command("sed -i -e '/UID_MIN/ s:1000:5000:' /etc/login.defs")
+        client.run_command("useradd u5k")
+        client.run_command("groupadd g1k")
+
+        assert "5000:5000" in client.run_command("tail -n4 /etc/passwd").stdout_text
+        assert "u5k:x:1000:" in client.run_command("tail -n4 /etc/group").stdout_text
+        assert "g1k:x:1001:" in client.run_command("tail -n4 /etc/group").stdout_text
+
+        client.run_command("userdel -rf u5k")
+        client.run_command("groupdel -f g1k")
