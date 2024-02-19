@@ -227,3 +227,31 @@ class TestPamBz(object):
                      f'+:local_anuj:127.0.0.1 ::1 {client.sys_hostname}',
                      f'+:local_anuj:127.0.0.1 ::1 {client.ip}']:
             config_and_login(multihost, conf)
+
+    def test_21244(self, multihost, create_localusers, bkp_pam_config):
+        """
+        :title: CVE-2024-22365 pam: allowing unpriledged user to block another user namespace
+        :id: f9e4f9b8-c57c-11ee-aa1d-845cf3eff344
+        :bugzilla: https://issues.redhat.com/browse/RHEL-21242
+                   https://issues.redhat.com/browse/RHEL-21244
+        :steps:
+            1. Change namespace.conf
+            2. Change password-auth
+            3. An unprivileged user can now place a FIFO at $HOME/tmp
+            4. Try to log in as this user with `pam_namespace` configured
+        :expectedresults:
+            1. $HOME/tmp /var/tmp/tmp-inst/ user:create root
+            2. session required pam_namespace.so
+            3. nobody$ mkfifo $HOME/tmp
+            4. Should not cause a local denial of service
+        """
+        client = multihost.client[0]
+        file_location = "/script/2014458.sh"
+        client.run_command("setenforce 0")
+        multihost.client[0].transport.put_file(os.getcwd() + file_location, '/tmp/2014458.sh')
+        client.run_command("echo '$HOME/tmp /var/tmp/tmp-inst/ user:create root' >> /etc/security/namespace.conf")
+        execute_cmd(multihost, "echo 'session required pam_namespace.so' >> /etc/pam.d/password-auth")
+        client.run_command("runuser -l  local_anuj -c 'mkfifo $HOME/tmp'")
+        with pytest.raises(Exception):
+            client.run_command("sh /tmp/2014458.sh")
+        client.run_command("rm -vf /tmp/2014458.sh")
