@@ -245,7 +245,7 @@ class TestPamBz(object):
             4. Should not cause a local denial of service
         """
         client = multihost.client[0]
-        file_location = "/script/2014458.sh"
+        file_location = "/multihost_test/bz_automation/script/2014458.sh"
         client.run_command("setenforce 0")
         multihost.client[0].transport.put_file(os.getcwd() + file_location, '/tmp/2014458.sh')
         client.run_command("echo '$HOME/tmp /var/tmp/tmp-inst/ user:create root' >> /etc/security/namespace.conf")
