@@ -254,3 +254,21 @@ class TestPamBz(object):
         with pytest.raises(Exception):
             client.run_command("sh /tmp/2014458.sh")
         client.run_command("rm -vf /tmp/2014458.sh")
+
+    def test_libpam_raise_line_buffer_size_limit(self, multihost, create_localusers, bkp_pam_config):
+        """
+        :title: libpam rejects pam config files containing long lines
+        :id: c9dbce70-2d4d-11ef-b036-845cf3eff344
+        :bugzilla: https://issues.redhat.com/browse/RHEL-5051
+                   https://issues.redhat.com/browse/RHEL-40705
+        :steps:
+            1. Edit /etc/pam.d/system-auth file to add pam_tty_audit.so with options "disable=* enable=".
+                Make the user list under "enable" longer than 1024 characters.
+            2. Try Login using command which uses "/etc/pam.d/system-auth" file. Example su - <username>
+        :expectedresults:
+            1. Edit should be successfull.
+            2. Successful login.
+        """
+        client = multihost.client[0]
+        client.run_command("echo 'session    required     pam_tty_audit.so disable=* enable=local_anuj0,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX' >> /etc/pam.d/system-auth")
+        client.run_command("su - local_anuj -c exit")
