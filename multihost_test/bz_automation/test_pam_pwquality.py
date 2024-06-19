@@ -18,6 +18,7 @@ class TestPamPwquality(object):
          dcredit, ucredit, lcredit, ocredit
         :id: e30c75be-eaf9-11eb-9781-845cf3eff344
         """
+        client = multihost.client[0]
         execute_cmd(multihost, 'yum install -y expect')
         assert 'password' in execute_cmd(multihost,
                                          "grep system-auth "
@@ -30,33 +31,23 @@ class TestPamPwquality(object):
         # Is the new password just the old password with the letters
         # reversed ("password" vs. "drowssap") or
         # rotated ("password" vs. "asswordp")
-        with pytest.raises(subprocess.CalledProcessError):
-            execute_cmd(multihost, "echo ssap | passwd --stdin local_anuj")
+        assert "error" in client.run_command("echo ssap | passwd --stdin local_anuj").stderr_text
         # Does the new password only differ from the
         # old one due to change of case
         # ("password" vs. "Password")?
-        with pytest.raises(subprocess.CalledProcessError):
-            execute_cmd(multihost, "echo PASS | passwd --stdin local_anuj")
+        assert "error" in client.run_command("echo PASS | passwd --stdin local_anuj").stderr_text
         execute_cmd(multihost, "sed -i 's/.*pam_pwquality.*/password "
                                "requisite pam_pwquality.so try_first_pass "
                                "retry=3 minlen=9 dcredit=-1 ucredit=-1 "
                                "lcredit=-1 ocredit=-1 type= enforce_for_root/' "
                                "/etc/pam.d/system-auth")
         # bad pass minlen < 9, dcredit < 1, ucredit < 1, lcredit < 1, ocredit < 1
-        with pytest.raises(subprocess.CalledProcessError):
-            execute_cmd(multihost, "echo pass | passwd --stdin local_anuj")
-        # bad pass minlen, no dcredit, ucredit, lcredit, ocredit
-        with pytest.raises(subprocess.CalledProcessError):
-            execute_cmd(multihost, "echo Passdonew# | passwd --stdin local_anuj")
-        # bad pass minlen, dcredit, no ucredit, lcredit, ocredit
-        with pytest.raises(subprocess.CalledProcessError):
-            execute_cmd(multihost, "echo passdonewt1# | passwd --stdin local_anuj")
-        # bad pass minlen, dcredit, ucredit, no lcredit, ocredit
-        with pytest.raises(subprocess.CalledProcessError):
-            execute_cmd(multihost, "echo PASSWORDU1# | passwd --stdin local_anuj")
-        # bad pass minlen, dcredit, ucredit, lcredit, no ocredit
-        with pytest.raises(subprocess.CalledProcessError):
-            execute_cmd(multihost, "echo PassdonewO1 | passwd --stdin local_anuj")
+        for password in ["pass",
+                         "Passdonew#",
+                         "passdonewt1#",
+                         "PASSWORDU1#",
+                         "PassdonewO1"]:
+            assert "failed" in client.run_command(f"echo {password} | passwd --stdin local_anuj").stderr_text
         # right password
         execute_cmd(multihost, f"echo Pass#donew1 | passwd --stdin local_anuj")
 

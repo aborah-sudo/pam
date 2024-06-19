@@ -1,3 +1,5 @@
+import time
+
 import pytest
 import subprocess
 import os
@@ -24,21 +26,24 @@ class TestPamBz(object):
             execute_cmd(multihost, f"echo {data} >> /etc/security/pwhistory.conf")
         # Try same password continually
         execute_cmd(multihost, f"echo x86_64_baseos_rpms | passwd --stdin local_anuj")
-        with pytest.raises(subprocess.CalledProcessError):
-            execute_cmd(multihost, f"echo x86_64_baseos_rpms | passwd --stdin local_anuj")
+        assert "failed" in \
+               multihost.client[0].run_command(f"echo x86_64_baseos_rpms | "
+                                               f"passwd --stdin local_anuj").stderr_text
         # Try same password after 2nd time
         for passwd in ['x86#64#baseos#rpms',
                        'x86^64^baseos^rpms']:
             execute_cmd(multihost, f"echo {passwd} | passwd --stdin local_anuj")
-        with pytest.raises(subprocess.CalledProcessError):
-            execute_cmd(multihost, f"echo x86#64#baseos#rpms | passwd --stdin local_anuj")
+        assert "failed" in \
+               multihost.client[0].run_command(f"echo x86#64#baseos#rpms | "
+                                               f"passwd --stdin local_anuj").stderr_text
         # Try same password after 3rd time
         for passwd in ['HI_I_AM_ANUJ',
                        'HI#I#AM#ANUJ',
                        'HI^I^AM^ANUJ']:
             execute_cmd(multihost, f"echo {passwd} | passwd --stdin local_anuj")
-        with pytest.raises(subprocess.CalledProcessError):
-            execute_cmd(multihost, f"echo HI_I_AM_ANUJ | passwd --stdin local_anuj")
+        assert "failed" in \
+               multihost.client[0].run_command(f"echo HI_I_AM_ANUJ | "
+                                               f"passwd --stdin local_anuj").stderr_text
         # Try same password after 4th time
         for passwd in ['ANUJ_AM_I_HI',
                        'ANUJ#AM#I#HI',
@@ -68,12 +73,14 @@ class TestPamBz(object):
                                "    requisite     pam_pwhistory.so remember=3 "
                                "use_authtok enforce_for_root\\n\\0/'  "
                                "/etc/pam.d/system-auth")
-        file_location = "/multihost_test/bz_automation/script/bz824858.sh"
+        file_location = "/script/bz824858.sh"
         multihost.client[0].transport.put_file(os.getcwd() +
                                                file_location,
                                                '/tmp/bz824858.sh')
         for i in [_PASSWORD, _PASSWORD2, _PASSWORD3]:
-            execute_cmd(multihost, f"sh /tmp/bz824858.sh pamtest1 {i}")
+            assert "successfully" in \
+                   multihost.client[0].run_command(f"sh /tmp/bz824858.sh pamtest1 {i}",
+                                                   raiseonerr=False).stdout_text
         with pytest.raises(subprocess.CalledProcessError):
             execute_cmd(multihost, f"sh /tmp/bz824858.sh pamtest1 {_PASSWORD}")
         execute_cmd(multihost, "echo R3dh4T1nC | passwd --stdin pamtest1")
@@ -83,4 +90,6 @@ class TestPamBz(object):
                                "    requisite     pam_pwhistory.so remember=3 use_authtok\\n\\0/'  "
                                "/etc/pam.d/system-auth")
         for i in [_PASSWORD, _PASSWORD2, _PASSWORD3, _PASSWORD4, _PASSWORD]:
-            execute_cmd(multihost, f"sh /tmp/bz824858.sh pamtest1 {i}")
+            assert "successfully" in \
+                   multihost.client[0].run_command(f"sh /tmp/bz824858.sh pamtest1 {i}",
+                                                   raiseonerr=False).stdout_text
