@@ -73,7 +73,7 @@ class TestPamBz(object):
                                "    requisite     pam_pwhistory.so remember=3 "
                                "use_authtok enforce_for_root\\n\\0/'  "
                                "/etc/pam.d/system-auth")
-        file_location = "/script/bz824858.sh"
+        file_location = "/multihost_test/bz_automation/script/bz824858.sh"
         multihost.client[0].transport.put_file(os.getcwd() +
                                                file_location,
                                                '/tmp/bz824858.sh')

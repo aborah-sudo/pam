@@ -192,7 +192,7 @@ class TestPamBz(object):
             3. Should succeed
         """
         client = multihost.client[0]
-        file_location = "/script/bz824858.sh"
+        file_location = "/multihost_test/bz_automation/script/bz824858.sh"
         multihost.client[0].transport.put_file(os.getcwd() + file_location, '/tmp/bz824858.sh')
         client.run_command("authselect select sssd --force")
         client.run_command("authselect enable-feature with-pamaccess")
