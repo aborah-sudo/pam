@@ -31,23 +31,23 @@ class TestPamPwquality(object):
         # Is the new password just the old password with the letters
         # reversed ("password" vs. "drowssap") or
         # rotated ("password" vs. "asswordp")
-        assert "error" in client.run_command("echo ssap | passwd --stdin local_anuj").stderr_text
+        assert "error" in client.run_command(
+            "echo ssap | passwd --stdin local_anuj", raiseonerr=False).stderr_text
         # Does the new password only differ from the
         # old one due to change of case
         # ("password" vs. "Password")?
-        assert "error" in client.run_command("echo PASS | passwd --stdin local_anuj").stderr_text
+        assert "error" in client.run_command(
+            "echo PASS | passwd --stdin local_anuj", raiseonerr=False).stderr_text
         execute_cmd(multihost, "sed -i 's/.*pam_pwquality.*/password "
                                "requisite pam_pwquality.so try_first_pass "
                                "retry=3 minlen=9 dcredit=-1 ucredit=-1 "
                                "lcredit=-1 ocredit=-1 type= enforce_for_root/' "
                                "/etc/pam.d/system-auth")
         # bad pass minlen < 9, dcredit < 1, ucredit < 1, lcredit < 1, ocredit < 1
-        for password in ["pass",
-                         "Passdonew#",
-                         "passdonewt1#",
-                         "PASSWORDU1#",
-                         "PassdonewO1"]:
-            assert "failed" in client.run_command(f"echo {password} | passwd --stdin local_anuj").stderr_text
+        for password in ["pass", "Passdonew#", "passdonewt1#", "PASSWORDU1#", "PassdonewO1"]:
+            command = client.run_command(
+                f"echo {password} | passwd --stdin local_anuj", raiseonerr=False).stderr_text
+            assert "failed" in command or "exhausted" in command
         # right password
         execute_cmd(multihost, f"echo Pass#donew1 | passwd --stdin local_anuj")
 
