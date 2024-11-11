@@ -1,3 +1,8 @@
+"""
+PAM Test Cases
+
+:requirement: pam
+"""
 
 import pytest
 from sssd.testlib.common.utils import SSHClient

@@ -1,3 +1,9 @@
+"""
+PAM Test Cases
+
+:requirement: pam
+"""
+
 import time
 
 import pytest
