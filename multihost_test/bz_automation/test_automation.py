@@ -1,3 +1,8 @@
+"""
+PAM Test Cases
+
+:requirement: pam
+"""
 
 import pytest
 import subprocess
@@ -225,15 +230,15 @@ class TestPamBz(object):
             4. Should not cause a local denial of service
         """
         client = multihost.client[0]
-        file_location = "/multihost_test/bz_automation/script/2014458.sh"
+        file_location = "/multihost_test/bz_automation/script/authentication.sh"
         client.run_command("setenforce 0")
-        multihost.client[0].transport.put_file(os.getcwd() + file_location, '/tmp/2014458.sh')
+        multihost.client[0].transport.put_file(os.getcwd() + file_location, '/tmp/authentication.sh')
         client.run_command("echo '$HOME/tmp /var/tmp/tmp-inst/ user:create root' >> /etc/security/namespace.conf")
         execute_cmd(multihost, "echo 'session required pam_namespace.so' >> /etc/pam.d/password-auth")
         client.run_command("runuser -l  local_anuj -c 'mkfifo $HOME/tmp'")
         with pytest.raises(Exception):
-            client.run_command("sh /tmp/2014458.sh")
-        client.run_command("rm -vf /tmp/2014458.sh")
+            client.run_command("sh /tmp/authentication.sh")
+        client.run_command("rm -vf /tmp/authentication.sh")
 
     def test_libpam_raise_line_buffer_size_limit(self, multihost, create_localusers, bkp_pam_config):
         """
@@ -252,3 +257,56 @@ class TestPamBz(object):
         client = multihost.client[0]
         client.run_command("echo 'session    required     pam_tty_audit.so disable=* enable=local_anuj0,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX' >> /etc/pam.d/system-auth")
         client.run_command("su - local_anuj -c exit")
+
+    def test_pam_access(self, multihost, create_localusers, bkp_pam_config):
+        """
+        :title: Using "pam_access", ssh login fails with this entry in
+                /etc/security/access.conf "+:username:127.0.0.1"
+        :id: d2a52d84-9fe0-11ef-a76a-3c18a0580700
+        :bugzilla: https://issues.redhat.com/browse/RHEL-65223
+        :setup:
+            1. Copy authentication script to client machine
+            2. Enable "with-pamaccess" feature using authselect
+            3. Configure  /etc/security/access.conf
+        :steps:
+            1. Try to log in with the user
+        :expectedresults:
+            1. Should succeed
+        """
+        client = multihost.client[0]
+        file_location = "/multihost_test/bz_automation/script/authentication.sh"
+        multihost.client[0].transport.put_file(os.getcwd() + file_location, '/tmp/authentication.sh')
+        client.run_command("authselect select sssd --force")
+        client.run_command("authselect enable-feature with-pamaccess")
+        assert "with-pamaccess" in client.run_command("authselect current").stdout_text
+        client.run_command(f"echo '+:local_anuj:127.0.0.1' >> /etc/security/access.conf")
+        client.run_command("echo '-:ALL:ALL' >> /etc/security/access.conf")
+        client.run_command("sh /tmp/authentication.sh")
+
+    def test_pam_access_account(self, multihost, create_localusers, bkp_pam_config):
+        """
+        :title: pam_access(sshd:account): cannot resolve hostname "LOCAL"
+                after upgrading to pam-1.5.1-19
+        :id: fcbae668-9fe0-11ef-9fbb-3c18a0580700
+        :bugzilla: https://issues.redhat.com/browse/RHEL-39943
+        :setup:
+            1. Copy authentication script to client machine
+            2. Enable "with-pamaccess" feature using authselect
+            3. Configure  /etc/security/access.conf
+        :steps:
+            1. Log in and Check error message does not appear in /var/log/secure
+        :expectedresults:
+            1. Should succeed
+        """
+        client = multihost.client[0]
+        client.run_command("> /var/log/secure")
+        file_location = "/multihost_test/bz_automation/script/authentication.sh"
+        multihost.client[0].transport.put_file(os.getcwd() + file_location, '/tmp/authentication.sh')
+        client.run_command("authselect select sssd --force")
+        client.run_command("authselect enable-feature with-pamaccess")
+        assert "with-pamaccess" in client.run_command("authselect current").stdout_text
+        client.run_command(f"echo '-:local_anuj:LOCAL' >> /etc/security/access.conf")
+        client.run_command("echo '+:local_anuj:ALL' >> /etc/security/access.conf")
+        client.run_command("sh /tmp/authentication.sh")
+        log_str = multihost.client[0].get_file_contents("/var/log/secure").decode('utf-8')
+        assert "LOCAL" not in log_str

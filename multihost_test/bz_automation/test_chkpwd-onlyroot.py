@@ -1,3 +1,8 @@
+"""
+PAM Test Cases
+
+:requirement: pam
+"""
 
 import pytest
 import subprocess
@@ -84,19 +89,19 @@ class TestPamBz(object):
         :id: 2c54e376-d5e8-11ec-87cb-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2014458
         """
-        file_location = '/multihost_test/bz_automation/script/2014458.sh'
+        file_location = '/multihost_test/bz_automation/script/authentication.sh'
         multihost.client[0].transport.put_file(os.getcwd() +
                                                file_location,
-                                               '/tmp/2014458.sh')
-        execute_cmd(multihost, f"chmod 755 /tmp/2014458.sh")
+                                               '/tmp/authentication.sh')
+        execute_cmd(multihost, f"chmod 755 /tmp/authentication.sh")
         multihost.client[0].run_command("mkdir /run/motd.d", raiseonerr=False)
         message = "Welcome to this system"
         execute_cmd(multihost, f'echo "{message}" > /run/motd.d/welcome')
         execute_cmd(multihost, "restorecon -Rv /run/motd.d")
-        cmd = execute_cmd(multihost, "sh /tmp/2014458.sh")
+        cmd = execute_cmd(multihost, "sh /tmp/authentication.sh")
         assert message in cmd.stdout_text
         execute_cmd(multihost, 'rm -vf /run/motd.d/welcome')
-        execute_cmd(multihost, 'rm -vf /tmp/2014458.sh')
+        execute_cmd(multihost, 'rm -vf /tmp/authentication.sh')
 
     def test_pam_unix(self, multihost):
         """
