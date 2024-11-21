@@ -310,3 +310,30 @@ class TestPamBz(object):
         client.run_command("sh /tmp/authentication.sh")
         log_str = multihost.client[0].get_file_contents("/var/log/secure").decode('utf-8')
         assert "LOCAL" not in log_str
+
+    def test_cve_access_control_bypass(self, multihost, bkp_pam_config, create_localusers):
+        """
+        :title: Improper hostname interpretation in pam_access leads to access control bypass
+        :id: ade05f56-a818-11ef-b978-52590940e9ab
+        :bugzilla: https://issues.redhat.com/browse/RHEL-66241
+        :setup:
+            1. Ensure pam_access is configured in /etc/pam.d/sshd
+            2. Configure /etc/security/access.conf
+            3. On a second system, spoof the hostname to match one of the tokens
+        :steps:
+            1. Initiate an ssh connection
+        :expectedresults:
+            1. Should not succeed
+        """
+        client = multihost.client[0]
+        file_location = "/multihost_test/bz_automation/script/authentication_master.sh"
+        multihost.master[0].transport.put_file(os.getcwd() + file_location, '/tmp/authentication_master.sh')
+
+        client.run_command("authselect enable-feature with-pamaccess")
+        execute_cmd(multihost, 'echo "+:local_anuj:cron crond tty1 tty2 tty3" >> /etc/security/access.conf')
+        execute_cmd(multihost, 'echo "-:local_anuj:ALL" >> /etc/security/access.conf')
+
+        multihost.master[0].run_command("hostnamectl set-hostname crond")
+        result = multihost.master[0].run_command(f"sh /tmp/authentication_master.sh "
+                                                 f"{multihost.client[0].sys_hostname}").stdout_text
+        assert "Connection closed by" in result
