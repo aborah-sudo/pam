@@ -2,6 +2,9 @@
 PAM Test Cases
 
 :requirement: pam
+:casecomponent: pam
+:subsystemteam: sst_idm_sssd
+:status: approved
 """
 
 
@@ -19,9 +22,8 @@ def execute_cmd(multihost, command):
 @pytest.mark.tier1
 class TestPamPwquality(object):
     def test_simple_test_system_auth(self, multihost, bkp_pam_config, create_localusers):
-        """
-        :title: Sanity tests for pam_pwquality.so minlen,
-         dcredit, ucredit, lcredit, ocredit
+        """Sanity tests for pam_pwquality.so minlen, dcredit, ucredit, lcredit, ocredit
+
         :id: e30c75be-eaf9-11eb-9781-845cf3eff344
         """
         client = multihost.client[0]
@@ -58,8 +60,8 @@ class TestPamPwquality(object):
         execute_cmd(multihost, f"echo Pass#donew1 | passwd --stdin local_anuj")
 
     def test_pam_retry_difok(self, multihost, bkp_pam_config, create_localusers):
-        """
-        :title: Sanity tests for pam_pwquality.so with difok, retry
+        """Sanity tests for pam_pwquality.so with difok, retry
+
         :id: e7c4db96-eaf9-11eb-8fbb-845cf3eff344
         """
         execute_cmd(multihost, "rm -vfr /tmp/anuj")
@@ -108,8 +110,8 @@ class TestPamPwquality(object):
                                    "local_anuj jf@#FafR3dh4T1nC!!F 3214 3214")
 
     def test_pam_gecoscheck(self, multihost, bkp_pam_config, create_localusers):
-        """
-        :title: Sanity tests for pam_pwquality.so gecoscheck
+        """Sanity tests for pam_pwquality.so gecoscheck
+
         :id: 60afc548-f063-11eb-9639-845cf3eff344
         """
         # Test gecoscheck parameter
@@ -128,8 +130,8 @@ class TestPamPwquality(object):
                                    "pamtest1 pamtest1 rYb4aicraK rYb4aicraK")
 
     def test_pam_maxclassrepeat(self, multihost, bkp_pam_config, create_localusers):
-        """
-        :title: Sanity tests for pam_pwquality.so maxclassrepeat
+        """Sanity tests for pam_pwquality.so maxclassrepeat
+
         :id: f8ba83e6-f063-11eb-b434-845cf3eff344
         """
         # Test maxclassrepeat parameter
@@ -150,8 +152,8 @@ class TestPamPwquality(object):
     def test_bz_769694(self, multihost,
                        bkp_pam_config,
                        create_localusers):
-        """
-        :title: RFE-Adding-the-size-option-for-tmpfs
+        """RFE-Adding-the-size-option-for-tmpfs
+
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=769694
         :id: 925dc91c-39b6-11ed-b859-845cf3eff344
         """

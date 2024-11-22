@@ -2,6 +2,9 @@
 PAM Test Cases
 
 :requirement: pam
+:casecomponent: pam
+:subsystemteam: sst_idm_sssd
+:status: approved
 """
 
 import pytest
@@ -17,8 +20,8 @@ def execute_cmd(multihost, command):
 @pytest.mark.usefixtures('unlimited_ssh')
 class TestPamBz(object):
     def test_unlimited(self, multihost):
-        """
-        :title: For nofile, a value of "unlimited" should be allowed.
+        """For nofile, a value of "unlimited" should be allowed.
+
         :id: 54d940a6-540d-11ec-9a01-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1989900
         """
@@ -28,8 +31,8 @@ class TestPamBz(object):
             assert id_id in cmd.stdout_text
 
     def test_unlimited_ssh(self, multihost):
-        """
-        :title: For nofile, a value of "unlimited" should be allowed.
+        """For nofile, a value of "unlimited" should be allowed.
+
         :id: 54d940a6-540d-11ec-9a01-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1989900
         """

@@ -2,6 +2,9 @@
 PAM Test Cases
 
 :requirement: pam
+:casecomponent: pam
+:subsystemteam: sst_idm_sssd
+:status: approved
 """
 
 import pytest
@@ -35,8 +38,8 @@ def config_and_login(multihost, config):
 @pytest.mark.tier1
 class TestPamBz(object):
     def test_read_faillock_conf_option(self, multihost, create_localusers):
-        """
-        :title: Faillock command does not read faillock.conf option
+        """Faillock command does not read faillock.conf option
+
         :id: df4ef7e0-a754-11ec-8300-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1978029
         """
@@ -88,8 +91,8 @@ class TestPamBz(object):
                                "/etc/security/faillock.conf")
 
     def test_cve_2010_3316(self, multihost, bkp_pam_config, compile_myxauth):
-        """
-        :title: CVE-2010-3316-pam_xauth-missing-return-value-checks-from-setuid
+        """CVE-2010-3316-pam_xauth-missing-return-value-checks-from-setuid
+
         :id: aebe751c-31b8-11ed-a91f-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=637898
         """
@@ -116,9 +119,8 @@ class TestPamBz(object):
         assert int(execute_cmd(multihost, "cat /tmp/xauthlog | wc -l" ).stdout_text.split()[0]) >= 2
 
     def test_2082442(self, multihost, bkp_pam_config, create_localusers):
-        """
-        :title: pam_faillock prints "Consecutive login failures
-         for user root account temporarily locked" without even_deny_root
+        """pam_faillock prints "Consecutive login failures root account temporarily locked" without even_deny_root
+
         :id: c1802552-5151-11ed-b8c2-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2126648
                    https://bugzilla.redhat.com/show_bug.cgi?id=2082442
@@ -132,8 +134,8 @@ class TestPamBz(object):
                not in execute_cmd(multihost, "cat /var/log/secure").stdout_text
 
     def test_2091062(self, multihost, create_localusers):
-        """
-        :title: "error scanning directory" errors from pam_motd
+        """"error scanning directory" errors from pam_motd
+
         :id: 556ae15e-560b-11ed-850a-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2091062
         """
@@ -148,8 +150,8 @@ class TestPamBz(object):
                execute_cmd(multihost, "cat /var/log/secure").stdout_text
 
     def test_pam_faillock_audit(self, multihost, create_localusers, bkp_pam_config):
-        """
-        :title: Pam_faillock audit events duplicate uid.
+        """Pam_faillock audit events duplicate uid.
+
         :id: c62fda84-401b-11ee-90bd-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2231556
         :setup:
@@ -182,9 +184,9 @@ class TestPamBz(object):
         assert f'op=pam_faillock suid={uid}' in log_str
 
     def test_2228934(self, multihost, create_localusers, bkp_pam_config):
-        """
-        :title: Using "pam_access", ssh login fails with this entry in
-            /etc/security/access.conf "+:username:localhost server1.example.com"
+        """Using "pam_access", ssh login fails with this entry in /etc/security/access.conf
+            "+:username:localhost server1.example.com"
+
         :id: 5b669434-35b9-11ee-b8b3-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2228934
         :steps:
@@ -213,8 +215,8 @@ class TestPamBz(object):
             config_and_login(multihost, conf)
 
     def test_21244(self, multihost, create_localusers, bkp_pam_config):
-        """
-        :title: CVE-2024-22365 pam: allowing unpriledged user to block another user namespace
+        """allowing unpriledged user to block another user namespace
+
         :id: f9e4f9b8-c57c-11ee-aa1d-845cf3eff344
         :bugzilla: https://issues.redhat.com/browse/RHEL-21242
                    https://issues.redhat.com/browse/RHEL-21244
@@ -241,8 +243,8 @@ class TestPamBz(object):
         client.run_command("rm -vf /tmp/authentication.sh")
 
     def test_libpam_raise_line_buffer_size_limit(self, multihost, create_localusers, bkp_pam_config):
-        """
-        :title: libpam rejects pam config files containing long lines
+        """libpam rejects pam config files containing long lines
+
         :id: c9dbce70-2d4d-11ef-b036-845cf3eff344
         :bugzilla: https://issues.redhat.com/browse/RHEL-5051
                    https://issues.redhat.com/browse/RHEL-40705
@@ -259,9 +261,8 @@ class TestPamBz(object):
         client.run_command("su - local_anuj -c exit")
 
     def test_pam_access(self, multihost, create_localusers, bkp_pam_config):
-        """
-        :title: Using "pam_access", ssh login fails with this entry in
-                /etc/security/access.conf "+:username:127.0.0.1"
+        """Using "pam_access", ssh login fails with this entry in /etc/security/access.conf "+:username:127.0.0.1"
+
         :id: d2a52d84-9fe0-11ef-a76a-3c18a0580700
         :bugzilla: https://issues.redhat.com/browse/RHEL-65223
         :setup:
@@ -284,9 +285,8 @@ class TestPamBz(object):
         client.run_command("sh /tmp/authentication.sh")
 
     def test_pam_access_account(self, multihost, create_localusers, bkp_pam_config):
-        """
-        :title: pam_access(sshd:account): cannot resolve hostname "LOCAL"
-                after upgrading to pam-1.5.1-19
+        """pam_access(sshd:account): cannot resolve hostname "LOCAL" after upgrading to pam-1.5.1-19
+
         :id: fcbae668-9fe0-11ef-9fbb-3c18a0580700
         :bugzilla: https://issues.redhat.com/browse/RHEL-39943
         :setup:
@@ -312,8 +312,8 @@ class TestPamBz(object):
         assert "LOCAL" not in log_str
 
     def test_cve_access_control_bypass(self, multihost, bkp_pam_config, create_localusers):
-        """
-        :title: Improper hostname interpretation in pam_access leads to access control bypass
+        """Improper hostname interpretation in pam_access leads to access control bypass
+
         :id: ade05f56-a818-11ef-b978-52590940e9ab
         :bugzilla: https://issues.redhat.com/browse/RHEL-66241
         :setup:

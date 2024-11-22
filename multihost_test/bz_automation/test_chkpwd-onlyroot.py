@@ -2,6 +2,9 @@
 PAM Test Cases
 
 :requirement: pam
+:casecomponent: pam
+:subsystemteam: sst_idm_sssd
+:status: approved
 """
 
 import pytest
@@ -19,9 +22,8 @@ def execute_cmd(multihost, command):
 @pytest.mark.tier1
 class TestPamBz(object):
     def test_chkpwd_onlyroot(self, multihost):
-        """
-        :title: This test checks whether unix_chkpwd
-        doesn't allow other user's password guessing.
+        """ This test checks whether unix_chkpwd doesn't allow other user's password guessing.
+
         :id: d3e88514-859a-11ec-bd05-845cf3eff344
         """
         execute_cmd(multihost, "dnf -y install expect shadow-utils sed grubby")
@@ -44,8 +46,8 @@ class TestPamBz(object):
         execute_cmd(multihost, f"userdel -rf {username2}")
 
     def test_bz675835(self, multihost, bkp_pam_config, create_localusers):
-        """
-        :title: bz675835-RFE-Please-support-nodefgroup-in-pam-access
+        """bz675835-RFE-Please-support-nodefgroup-in-pam-access
+
         :id: a9c10cf2-85c7-11ec-9ed5-845cf3eff344
         """
         execute_cmd(multihost, "yum install -y expect")
@@ -69,8 +71,8 @@ class TestPamBz(object):
             execute_cmd(multihost, "sh /tmp/bz675835.sh pamtest1 x")
 
     def test_1949137(self, multihost, bkp_pam_config, create_system_user, create_localusers):
-        """
-        :title: pam_usertype has flawed logic for system accounts.
+        """pam_usertype has flawed logic for system accounts.
+
         :id: fe3e1048-9483-11ec-b9bb-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1949137
         """
@@ -83,9 +85,8 @@ class TestPamBz(object):
         assert "Password: su: Authentication failure" in result1.readlines()[0]
 
     def test_2014458(self, multihost, create_localusers):
-        """
-        :title: Please backport checking multiple
-         motd_pam paths from 1.4.0 to RHEL 8
+        """Please backport checking multiple motd_pam paths from 1.4.0 to RHEL 8
+
         :id: 2c54e376-d5e8-11ec-87cb-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2014458
         """
@@ -104,8 +105,8 @@ class TestPamBz(object):
         execute_cmd(multihost, 'rm -vf /tmp/authentication.sh')
 
     def test_pam_unix(self, multihost):
-        """
-        :title: pam authentication from root/user
+        """pam authentication from root/user
+
         :id: da0bf07e-38f6-11ed-93d7-845cf3eff344
         """
         PASSWORD = "TestPassword"
@@ -142,8 +143,8 @@ class TestPamBz(object):
         execute_cmd(multihost, "userdel -rf testUser")
 
     def test_19810(self, multihost, bkp_pam_config, create_localusers):
-        """
-        :title: Faillock does not create tallydir
+        """Faillock does not create tallydir
+
         :id: 2533f790-abc4-11ee-bde9-845cf3eff344
         :bugzilla: https://issues.redhat.com/browse/RHEL-19810
         :steps:
@@ -164,8 +165,8 @@ class TestPamBz(object):
         assert "Password: su: Authentication failure" not in result1.readlines()[0]
 
     def test_16727(self, multihost, bkp_pam_config, create_localusers):
-        """
-        :title: PAM can't identify the user when running from external host
+        """PAM can't identify the user when running from external host
+
         :id: ae78e4d6-ba95-11ee-8362-845cf3eff344
         :bugzilla: https://issues.redhat.com/browse/RHEL-16727
         :steps:

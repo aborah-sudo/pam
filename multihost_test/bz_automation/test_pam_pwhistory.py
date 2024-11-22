@@ -2,6 +2,9 @@
 PAM Test Cases
 
 :requirement: pam
+:casecomponent: pam
+:subsystemteam: sst_idm_sssd
+:status: approved
 """
 
 import time
@@ -19,8 +22,8 @@ def execute_cmd(multihost, command):
 @pytest.mark.tier1
 class TestPamBz(object):
     def test_2068461(self, multihost, create_localusers, bkp_pam_config):
-        """
-        :title: RFE allow to configure pam_pwhistory with configuration file.
+        """ RFE allow to configure pam_pwhistory with configuration file.
+
         :id: 47e71a8e-2203-11ed-968a-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2068461
         """
@@ -60,8 +63,8 @@ class TestPamBz(object):
             execute_cmd(multihost, f"echo {passwd} | passwd --stdin local_anuj")
 
     def test_pwhistory_enforces_root(self, multihost, bkp_pam_config, create_localusers):
-        """
-        :title: bz824858-pam-pwhistory-enforces-root-to-password-change
+        """bz824858-pam-pwhistory-enforces-root-to-password-change
+
         :id: e7c4db96-eaf9-11eb-8fbb-845cf3eff344
         :bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=824858
         """
