@@ -35,8 +35,8 @@ def config_and_login(multihost, config):
     client.run_command("cp -vf /etc/security/access.conf_anuj /etc/security/access.conf")
 
 
-@pytest.mark.tier1
 class TestPamBz(object):
+    @pytest.mark.tier1
     def test_read_faillock_conf_option(self, multihost, create_localusers):
         """Faillock command does not read faillock.conf option
 
@@ -90,6 +90,7 @@ class TestPamBz(object):
         execute_cmd(multihost, "cp -vf /etc/security/faillock.conf_bkp "
                                "/etc/security/faillock.conf")
 
+    @pytest.mark.tier1
     def test_cve_2010_3316(self, multihost, bkp_pam_config, compile_myxauth):
         """CVE-2010-3316-pam_xauth-missing-return-value-checks-from-setuid
 
@@ -118,6 +119,7 @@ class TestPamBz(object):
         execute_cmd(multihost, f"userdel -rf {TUSER}")
         assert int(execute_cmd(multihost, "cat /tmp/xauthlog | wc -l" ).stdout_text.split()[0]) >= 2
 
+    @pytest.mark.tier1
     def test_2082442(self, multihost, bkp_pam_config, create_localusers):
         """pam_faillock prints "Consecutive login failures root account temporarily locked" without even_deny_root
 
@@ -133,6 +135,7 @@ class TestPamBz(object):
         assert "Consecutive login failures for user root account temporarily locked" \
                not in execute_cmd(multihost, "cat /var/log/secure").stdout_text
 
+    @pytest.mark.tier1
     def test_2091062(self, multihost, create_localusers):
         """"error scanning directory" errors from pam_motd
 
@@ -149,6 +152,7 @@ class TestPamBz(object):
         assert "pam_motd: error scanning directory" not in \
                execute_cmd(multihost, "cat /var/log/secure").stdout_text
 
+    @pytest.mark.tier1
     def test_pam_faillock_audit(self, multihost, create_localusers, bkp_pam_config):
         """Pam_faillock audit events duplicate uid.
 
@@ -183,6 +187,7 @@ class TestPamBz(object):
         client.run_command("cp -vf /etc/security/faillock.conf_anuj /etc/security/faillock.conf")
         assert f'op=pam_faillock suid={uid}' in log_str
 
+    @pytest.mark.tier1
     def test_2228934(self, multihost, create_localusers, bkp_pam_config):
         """Using "pam_access", ssh login fails with this entry in /etc/security/access.conf
             "+:username:localhost server1.example.com"
@@ -214,6 +219,7 @@ class TestPamBz(object):
         ]:
             config_and_login(multihost, conf)
 
+    @pytest.mark.tier1
     def test_21244(self, multihost, create_localusers, bkp_pam_config):
         """allowing unpriledged user to block another user namespace
 
@@ -242,6 +248,7 @@ class TestPamBz(object):
             client.run_command("sh /tmp/authentication.sh")
         client.run_command("rm -vf /tmp/authentication.sh")
 
+    @pytest.mark.tier1
     def test_libpam_raise_line_buffer_size_limit(self, multihost, create_localusers, bkp_pam_config):
         """libpam rejects pam config files containing long lines
 
@@ -260,6 +267,7 @@ class TestPamBz(object):
         client.run_command("echo 'session    required     pam_tty_audit.so disable=* enable=local_anuj0,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX,local_anujX' >> /etc/pam.d/system-auth")
         client.run_command("su - local_anuj -c exit")
 
+    @pytest.mark.tier1
     def test_pam_access(self, multihost, create_localusers, bkp_pam_config):
         """Using "pam_access", ssh login fails with this entry in /etc/security/access.conf "+:username:127.0.0.1"
 
@@ -284,6 +292,7 @@ class TestPamBz(object):
         client.run_command("echo '-:ALL:ALL' >> /etc/security/access.conf")
         client.run_command("sh /tmp/authentication.sh")
 
+    @pytest.mark.tier1
     def test_pam_access_account(self, multihost, create_localusers, bkp_pam_config):
         """pam_access(sshd:account): cannot resolve hostname "LOCAL" after upgrading to pam-1.5.1-19
 
@@ -311,6 +320,7 @@ class TestPamBz(object):
         log_str = multihost.client[0].get_file_contents("/var/log/secure").decode('utf-8')
         assert "LOCAL" not in log_str
 
+    @pytest.mark.tier2
     def test_cve_access_control_bypass(self, multihost, bkp_pam_config, create_localusers):
         """Improper hostname interpretation in pam_access leads to access control bypass
 
